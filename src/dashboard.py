@@ -850,8 +850,9 @@ def add_peer(config_name):
         except:
             return "Persistent Keepalive format is not correct."
     try:
+        gen = subprocess.check_output('wg genpsk > preshared_key.psk', shell=True)
         status = subprocess.check_output(
-            "wg set " + config_name + " peer " + public_key + " allowed-ips " + allowed_ips + " preshared-key " + preshared_key, shell=True,
+            "wg set " + config_name + " peer " + public_key + " allowed-ips " + allowed_ips + " preshared-key preshared_key.psk", shell=True,
             stderr=subprocess.STDOUT)
         status = subprocess.check_output("wg-quick save " + config_name, shell=True, stderr=subprocess.STDOUT)
         get_all_peers_data(config_name)
@@ -859,6 +860,7 @@ def add_peer(config_name):
                    "endpoint_allowed_ip": endpoint_allowed_ip, "preshared_key": preshared_key},
                   peers.id == public_key)
         db.close()
+        os.remove('preshared_key.psk')
         return "true"
     except subprocess.CalledProcessError as exc:
         db.close()
