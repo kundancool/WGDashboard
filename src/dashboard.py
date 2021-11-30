@@ -410,7 +410,9 @@ def gen_private_key():
     private_key = private.readline().strip()
     public = open('public_key.txt')
     public_key = public.readline().strip()
-    data = {"private_key": private_key, "public_key": public_key}
+    preshared_key = subprocess.check_output("wg genpsk", shell=True)
+    preshared_key = preshared_key.decode("UTF-8").split()[0]
+    data = {"private_key": private_key, "public_key": public_key, "preshared_key" : preshared_key}
     private.close()
     public.close()
     os.remove('private_key.txt')
@@ -820,6 +822,7 @@ def add_peer(config_name):
     peers = Query()
     data = request.get_json()
     public_key = data['public_key']
+    preshared_key = data['preshared_key']
     allowed_ips = data['allowed_ips']
     endpoint_allowed_ip = data['endpoint_allowed_ip']
     DNS = data['DNS']
@@ -848,12 +851,12 @@ def add_peer(config_name):
             return "Persistent Keepalive format is not correct."
     try:
         status = subprocess.check_output(
-            "wg set " + config_name + " peer " + public_key + " allowed-ips " + allowed_ips, shell=True,
+            "wg set " + config_name + " peer " + public_key + " allowed-ips " + allowed_ips + " preshared-key " + preshared_key, shell=True,
             stderr=subprocess.STDOUT)
         status = subprocess.check_output("wg-quick save " + config_name, shell=True, stderr=subprocess.STDOUT)
         get_all_peers_data(config_name)
         db.update({"name": data['name'], "private_key": data['private_key'], "DNS": data['DNS'],
-                   "endpoint_allowed_ip": endpoint_allowed_ip},
+                   "endpoint_allowed_ip": endpoint_allowed_ip, "preshared_key": preshared_key},
                   peers.id == public_key)
         db.close()
         return "true"

@@ -13,6 +13,7 @@ function generate_key(){
     }).done(function(res){
         $("#private_key").val(res.private_key)
         $("#public_key").val(res.public_key)
+        $("#preshared_key").val(res.preshared_key)
         $("#add_peer_alert").addClass("d-none");
         $("#re_generate_key i").removeClass("rotating")
     })
@@ -72,6 +73,7 @@ $("#save_peer").click(function(){
             data: JSON.stringify({
                 "private_key":$("#private_key").val(),
                 "public_key":$("#public_key").val(),
+                "preshared_key":$("#preshared_key").val(),
                 "allowed_ips": $("#allowed_ips").val(),
                 "name":$("#new_add_name").val(),
                 "DNS": $("#new_add_DNS").val(),
